@@ -1,5 +1,6 @@
 #include "board.h"
 #include "system_info.h"
+#include "esp32_music.h"
 #include "settings.h"
 #include "display/display.h"
 #include "display/oled_display.h"
@@ -60,6 +61,10 @@ Display* Board::GetDisplay() {
 
 Camera* Board::GetCamera() {
     return nullptr;
+}
+
+Music* Board::GetMusic() {
+    return music_;
 }
 
 Led* Board::GetLed() {

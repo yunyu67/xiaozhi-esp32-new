@@ -134,3 +134,6 @@ dependencies:
   ## Required IDF version
   idf:
     version: '>=5.5.2'
+
+  ## MP3 audio decoder for music player
+  chmorgan/esp-libhelix-mp3: "*"

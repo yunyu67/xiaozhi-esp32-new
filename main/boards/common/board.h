@@ -13,6 +13,7 @@
 #include "backlight.h"
 #include "camera.h"
 #include "assets.h"
+#include "music.h"
 
 /**
  * Network events for unified callback
@@ -57,6 +58,7 @@ protected:
 
     // 软件生成的设备唯一标识
     std::string uuid_;
+    Music* music_;
 
 public:
     static Board& GetInstance() {
@@ -73,6 +75,7 @@ public:
     virtual bool GetTemperature(float& esp32temp);
     virtual Display* GetDisplay();
     virtual Camera* GetCamera();
+    virtual Music* GetMusic();
     virtual NetworkInterface* GetNetwork() = 0;
     virtual void StartNetwork() = 0;
     virtual void SetNetworkEventCallback(NetworkEventCallback callback) { (void)callback; }

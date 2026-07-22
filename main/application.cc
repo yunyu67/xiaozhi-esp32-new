@@ -8,6 +8,7 @@
 #include "assets/lang_config.h"
 #include "mcp_server.h"
 #include "assets.h"
+#include "esp32_music.h"
 #include "settings.h"
 
 #include <cstring>
@@ -87,6 +88,7 @@ void Application::Initialize() {
 
     // Add state change listeners
     state_machine_.AddStateChangeListener([this](DeviceState old_state, DeviceState new_state) {
+        previous_state_ = old_state;
         xEventGroupSetBits(event_group_, MAIN_EVENT_STATE_CHANGED);
     });
 
@@ -778,7 +780,22 @@ void Application::HandleWakeWordDetectedEvent() {
         return;
     }
 
+    // DND mode: if music is playing, lower volume and defer wake word
     auto state = GetDeviceState();
+    if (state == kDeviceStateIdle) {
+        auto music = Board::GetInstance().GetMusic();
+        if (music && music->IsDndModeEnabled() && music->IsPlaying()) {
+            ESP_LOGI(TAG, "Wake word during music playback - DND active, deferring");
+            pending_wake_word_ = true;
+            // Lower music volume to 1/3 so wake word is easier to hear
+            auto codec = Board::GetInstance().GetAudioCodec();
+            if (codec) {
+                codec->SetOutputVolume(codec->output_volume() / 3);
+            }
+            return;
+        }
+    }
+
     auto wake_word = audio_service_.GetLastWakeWord();
     ESP_LOGI(TAG, "Wake word detected: %s (state: %d)", wake_word.c_str(), (int)state);
 
@@ -857,6 +874,38 @@ void Application::HandleStateChangedEvent() {
     auto display = board.GetDisplay();
     auto led = board.GetLed();
     led->OnStateChanged();
+
+    // DND music logic: when leaving Idle, keep music playing if DND active
+    if (previous_state_ == kDeviceStateIdle && new_state != kDeviceStateIdle) {
+        auto music = board.GetMusic();
+        if (music) {
+            if (music->IsDndModeEnabled() && music->IsPlaying()) {
+                ESP_LOGI(TAG, "Music DND active - keeping music playing during %s",
+                         new_state == kDeviceStateConnecting ? "connecting" :
+                         new_state == kDeviceStateListening ? "listening" : "speaking");
+            } else {
+                music->StopStreaming();
+            }
+        }
+    }
+
+    // When returning to Idle, process any pending wake word from DND mode
+    // (bypass DND check since we just returned to Idle and music is done)
+    if (new_state == kDeviceStateIdle && pending_wake_word_) {
+        pending_wake_word_ = false;
+        ESP_LOGI(TAG, "Processing pending wake word after music");
+        // Directly trigger the wake word flow without going through DND check again
+        audio_service_.EncodeWakeWord();
+        auto wake_word = audio_service_.GetLastWakeWord();
+        if (!protocol_->IsAudioChannelOpened()) {
+            SetDeviceState(kDeviceStateConnecting);
+            Schedule([this, wake_word]() {
+                ContinueWakeWordInvoke(wake_word);
+            });
+        } else {
+            ContinueWakeWordInvoke(wake_word);
+        }
+    }
     
     switch (new_state) {
         case kDeviceStateUnknown:
