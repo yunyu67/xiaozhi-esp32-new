@@ -1,0 +1,31 @@
+name: Test Build esp-box
+
+on:
+  push:
+    branches:
+      - test-upstream
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build esp-box (upstream v2.2.6)
+    runs-on: ubuntu-latest
+    container:
+      image: espressif/idf:v6.0.1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Build esp-box
+        run: |
+          source /export.sh
+          python scripts/release.py esp-box --name esp-box
+
+      - name: Upload firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: xiaozhi_esp_box
+          path: build/merged-binary.bin
+          if-no-files-found: error
