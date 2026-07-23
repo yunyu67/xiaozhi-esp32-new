@@ -18,10 +18,12 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Build zhengchen-minicam
+      - name: Build
         run: |
-          . /opt/esp-idf/export.sh
-          python scripts/release.py zhengchen-minicam --name zhengchen-minicam
+          source /opt/esp-idf/export.sh
+          idf.py set-target esp32s3
+          idf.py reconfigure
+          idf.py build
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
