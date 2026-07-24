@@ -9,7 +9,6 @@
 #include "led/single_led.h"
 #include "esp32_camera.h"
 #include "zhengchen_minicam_lcd_display.h"
-#include "esp32_music.h"
 
 #include <esp_log.h>
 #include <driver/i2c_master.h>
@@ -42,7 +41,6 @@ private:
     TaskHandle_t volume_key_task_handle_;
     SemaphoreHandle_t adc_mutex_;
     Display* display_;
-    Esp32Music* music_;
     static constexpr size_t kBatteryAverageWindowSize = 8;
     int battery_samples_mv_[kBatteryAverageWindowSize] = {0};
     int battery_ref_samples_mv_[kBatteryAverageWindowSize] = {0};
@@ -552,8 +550,8 @@ public:
           adc_task_handle_(nullptr),
           volume_key_task_handle_(nullptr),
           adc_mutex_(nullptr),
-          display_(nullptr),
-          music_(new Esp32Music()) {
+          display_(nullptr) {
+
         InitializeStateOutput();
         InitializeI2c();
         InitializeADC();
@@ -640,9 +638,7 @@ public:
         return camera_;
     }
 
-    virtual Music* GetMusic() override {
-        return music_;
-    }
+
 };
 
 DECLARE_BOARD(zhengchen_minicam);

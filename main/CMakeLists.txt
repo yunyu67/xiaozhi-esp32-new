@@ -958,7 +958,7 @@ if(CONFIG_IDF_TARGET_ESP32S3)
 endif()
 
 # Include Esp32Music (streaming audio player)
-list(APPEND SOURCES "boards/common/esp32_music.cc")
+# music feature excluded: esp32_music.cc is from upstream v2.2.6 and references Display/Application/AudioCodec APIs absent in this checkout (version mismatch at commit 37c55aa)
 
 set(MAIN_PRIV_REQUIRES_EXTRA "")
 if(CONFIG_BOARD_TYPE_ESP_VOCAT)

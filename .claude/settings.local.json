@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(idf.py build:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(idf.py reconfigure:*)",
+      "Bash(git restore *)",
+      "Bash(python *)",
+      "Bash(~/.espressif/tools/xtensa-esp-elf/esp-14.2.0_20251107/xtensa-esp-elf/bin/xtensa-esp32s3-elf-addr2line *)",
+      "Bash(git -C \"/home/fjh/project/xiaozhi-esp32\" status --short)",
+      "Bash(git -C \"/home/fjh/project/xiaozhi-esp32\" diff --stat)",
+      "Bash(git -C \"/home/fjh/project/xiaozhi-esp32\" diff -- main/application.cc)",
+      "Bash(git -C \"/home/fjh/project/xiaozhi-esp32\" diff --ignore-space-at-eol --ignore-cr-at-eol -- main/CMakeLists.txt main/Kconfig.projbuild | sed -n '1,220p')"
+    ]
+  }
+}
